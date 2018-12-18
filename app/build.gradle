@@ -1,0 +1,26 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '28.0.3'
+
+    defaultConfig {
+        applicationId "com.codelixir.ioioservo"
+        minSdkVersion 14
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.github.ytai.ioio:IOIOLibAndroid:5.07'
+    implementation 'com.github.ytai.ioio:IOIOLibAndroidBluetooth:5.07'
+    implementation 'com.github.ytai.ioio:IOIOLibAndroidAccessory:5.07'
+    implementation 'com.github.ytai.ioio:IOIOLibAndroidDevice:5.07'
+}
