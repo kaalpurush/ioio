@@ -1,5 +1,6 @@
 package com.codelixir.ioioservo;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -47,7 +48,8 @@ public class HelloIOIOService extends IOIOService implements
 
     public interface IHelloIOIOService {
         void onConnect();
-        void onDisConnect();
+
+        void onDisconnect();
     }
 
     private void registerListeners() {
@@ -63,29 +65,28 @@ public class HelloIOIOService extends IOIOService implements
     @Override
     protected IOIOLooper createIOIOLooper() {
         return new BaseIOIOLooper() {
-            private AnalogInput input_;
+            // private AnalogInput input_;
             private PwmOutput pwmOutput_;
             private DigitalOutput led_;
 
             @Override
             public void disconnected() {
                 super.disconnected();
-                listener.onDisConnect();
-                ;
+                listener.onDisconnect();
             }
 
             @Override
             protected void setup() throws ConnectionLostException,
                     InterruptedException {
                 led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
-                input_ = ioio_.openAnalogInput(40);
+                //input_ = ioio_.openAnalogInput(40);
                 pwmOutput_ = ioio_.openPwmOutput(12, 50);
             }
 
             @Override
             public void loop() throws ConnectionLostException,
                     InterruptedException {
-                final float reading = input_.read();
+                //final float reading = input_.read();
                 // setText(Float.toString(reading));
 
                 int roll = (int) (554 + (1836 / 20 * (tilt + 10)));
@@ -129,11 +130,21 @@ public class HelloIOIOService extends IOIOService implements
         mNotificationManager = (NotificationManager) this
                 .getSystemService(Context.NOTIFICATION_SERVICE);
 
+        String channelId = "general";
+        String channelName = "General";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel mChannel = new NotificationChannel(
+                    channelId, channelName, importance);
+            mNotificationManager.createNotificationChannel(mChannel);
+        }
+
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(this, MainActivity.class), 0);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-                this, "general")
+                this, channelId)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentTitle(getText(R.string.app_name))
                 .setSound(
@@ -141,15 +152,14 @@ public class HelloIOIOService extends IOIOService implements
                                 .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setContentIntent(contentIntent).setOngoing(true);
 
-        Intent buttonIntent = new Intent(this, IntentActivity.class);
+        Intent buttonIntent = new Intent(this, NotificationActionBroadcastReceiver.class);
         buttonIntent.setAction("stopService");
-        PendingIntent buttonPendingIntent = PendingIntent.getActivity(this, 0,
+        PendingIntent buttonPendingIntent = PendingIntent.getBroadcast(this, 0,
                 buttonIntent, 0);
 
         mBuilder.addAction(R.drawable.stop, "Stop", buttonPendingIntent);
 
         mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
-
     }
 
     public void toggleLed() {
