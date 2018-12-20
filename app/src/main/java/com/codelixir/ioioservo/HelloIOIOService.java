@@ -48,7 +48,7 @@ public class HelloIOIOService extends IOIOService implements
 
     public interface IHelloIOIOService {
         void onConnect();
-
+        void onRollChanged(int roll);
         void onDisconnect();
     }
 
@@ -89,13 +89,14 @@ public class HelloIOIOService extends IOIOService implements
                 //final float reading = input_.read();
                 // setText(Float.toString(reading));
 
-                int roll = (int) (554 + (1836 / 20 * (tilt + 10)));
+                int roll = (int) (500 + ((2000 / 20) * (tilt + 10)));
 
                 Log.d("roll", String.valueOf(roll));
 
-                if (Math.abs(lastRoll - roll) > 100 && roll > 554
-                        && roll < 2390) {
+                if (Math.abs(lastRoll - roll) > 10 && roll > 500
+                        && roll < 2500) {
                     pwmOutput_.setPulseWidth(roll);
+                    listener.onRollChanged(roll);
                     lastRoll = roll;
                 }
 
@@ -174,6 +175,7 @@ public class HelloIOIOService extends IOIOService implements
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             tilt = event.values[0];
+            Log.d("tilt", String.valueOf(tilt));
         }
     }
 

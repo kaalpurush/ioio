@@ -3,14 +3,18 @@ package com.codelixir.ioioservo;
 import com.codelixir.ioioservo.HelloIOIOService.IHelloIOIOService;
 import com.codelixir.ioioservo.HelloIOIOService.IOIOBinder;
 
+import android.app.ActivityManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 import android.app.Activity;
@@ -51,9 +55,6 @@ public class MainActivity extends Activity implements IHelloIOIOService {
 
         enableBluetooth();
 
-        Intent intent = new Intent(this, HelloIOIOService.class);
-        bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
-        startService(intent);
         setContentView(R.layout.main);
 
         toggleButton_ = findViewById(R.id.ToggleButton);
@@ -67,6 +68,41 @@ public class MainActivity extends Activity implements IHelloIOIOService {
                     mHelloIOIOService.toggleLed();
             }
         });
+
+        final Button btnStart = findViewById(R.id.btnStart);
+        btnStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                if (mBluetoothAdapter.isEnabled()) {
+                    startIOIOService();
+                    btnStart.setVisibility(View.GONE);
+                    toggleButton_.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
+        if (isServiceRunning()) {
+            startIOIOService();
+            btnStart.setVisibility(View.GONE);
+            toggleButton_.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private boolean isServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (HelloIOIOService.class.getCanonicalName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void startIOIOService() {
+        Intent intent = new Intent(this, HelloIOIOService.class);
+        bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
+        startService(intent);
     }
 
     private void enableBluetooth() {
@@ -92,6 +128,18 @@ public class MainActivity extends Activity implements IHelloIOIOService {
 
     @Override
     public void onConnect() {
+
+    }
+
+    @Override
+    public void onRollChanged(final int roll) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ProgressBar progressBar = findViewById(R.id.progressBar);
+                progressBar.setProgress(roll);
+            }
+        });
 
     }
 
