@@ -27,6 +27,8 @@ public class MainActivity extends Activity implements IHelloIOIOService {
     private HelloIOIOService mHelloIOIOService;
     boolean isBound = false;
 
+    Button btnStart;
+
     private ServiceConnection myConnection = new ServiceConnection() {
 
         @Override
@@ -69,31 +71,29 @@ public class MainActivity extends Activity implements IHelloIOIOService {
             }
         });
 
-        final Button btnStart = findViewById(R.id.btnStart);
+        btnStart = findViewById(R.id.btnStart);
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
                 if (mBluetoothAdapter.isEnabled()) {
                     startIOIOService();
-                    btnStart.setVisibility(View.GONE);
-                    toggleButton_.setVisibility(View.VISIBLE);
                 }
             }
         });
 
         if (isServiceRunning()) {
             startIOIOService();
-            btnStart.setVisibility(View.GONE);
-            toggleButton_.setVisibility(View.VISIBLE);
         }
     }
 
     private boolean isServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (HelloIOIOService.class.getCanonicalName().equals(service.service.getClassName())) {
-                return true;
+        if (manager != null) {
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (HelloIOIOService.class.getCanonicalName().equals(service.service.getClassName())) {
+                    return true;
+                }
             }
         }
         return false;
@@ -103,6 +103,9 @@ public class MainActivity extends Activity implements IHelloIOIOService {
         Intent intent = new Intent(this, HelloIOIOService.class);
         bindService(intent, myConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
+
+        btnStart.setVisibility(View.GONE);
+        toggleButton_.setVisibility(View.VISIBLE);
     }
 
     private void enableBluetooth() {

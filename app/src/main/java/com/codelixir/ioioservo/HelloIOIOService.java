@@ -48,7 +48,9 @@ public class HelloIOIOService extends IOIOService implements
 
     public interface IHelloIOIOService {
         void onConnect();
+
         void onRollChanged(int roll);
+
         void onDisconnect();
     }
 
@@ -108,6 +110,12 @@ public class HelloIOIOService extends IOIOService implements
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
         showNotification();
@@ -133,11 +141,10 @@ public class HelloIOIOService extends IOIOService implements
 
         String channelId = "general";
         String channelName = "General";
-        int importance = NotificationManager.IMPORTANCE_HIGH;
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel mChannel = new NotificationChannel(
-                    channelId, channelName, importance);
+                    channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
             mNotificationManager.createNotificationChannel(mChannel);
         }
 
