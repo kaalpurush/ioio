@@ -10,12 +10,13 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.Material.Light">
+        android:theme="@style/Theme.AppCompat.Light">
         <uses-library
             android:name="com.android.future.usb.accessory"
             android:required="false" />
 
-        <service android:name=".HelloIOIOService"
+        <service
+            android:name=".HelloIOIOService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />

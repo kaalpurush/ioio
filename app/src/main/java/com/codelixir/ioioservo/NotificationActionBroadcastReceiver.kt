@@ -3,6 +3,7 @@ package com.codelixir.ioioservo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import com.codelixir.ioioservo.HelloIOIOService
 
 class NotificationActionBroadcastReceiver : BroadcastReceiver() {
@@ -13,7 +14,7 @@ class NotificationActionBroadcastReceiver : BroadcastReceiver() {
                 Intent(
                     context,
                     MainActivity::class.java
-                ).setAction("stopActivity")
+                ).setAction("stopActivity").setFlags(FLAG_ACTIVITY_NEW_TASK)
             )
         }
     }

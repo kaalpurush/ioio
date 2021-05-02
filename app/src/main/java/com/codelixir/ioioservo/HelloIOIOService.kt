@@ -14,7 +14,6 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.codelixir.ioioservo.HelloIOIOService
 import ioio.lib.api.DigitalOutput
 import ioio.lib.api.IOIO
 import ioio.lib.api.PwmOutput
@@ -33,8 +32,9 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
     var tilt = 0f
     var mLed = false
     var lastRoll = 0
+    var seek = 0
     var m_sensorManager: SensorManager? = null
-    private val myBinder: IBinder = IOIOBinder()
+    private val mBinder: IBinder = IOIOBinder()
     protected var listener: IHelloIOIOService? = null
 
     interface IHelloIOIOService {
@@ -67,6 +67,7 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
 
             @Throws(ConnectionLostException::class, InterruptedException::class)
             override fun setup() {
+                listener!!.onConnect()
                 led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true)
                 //input_ = ioio_.openAnalogInput(40);
                 pwmOutput_ = ioio_.openPwmOutput(12, 50)
@@ -76,12 +77,17 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
             override fun loop() {
                 //final float reading = input_.read();
                 // setText(Float.toString(reading));
-                val roll = (500 + 2000 / 20 * (tilt + 10)).toInt()
-                Log.d("roll", roll.toString())
-                if (Math.abs(lastRoll - roll) > 10 && roll > 500 && roll < 2500) {
-                    pwmOutput_!!.setPulseWidth(roll)
-                    listener!!.onRollChanged(roll)
-                    lastRoll = roll
+                if (mLed) {
+                    val roll = (500 + 2000 / 20 * (tilt + 10)).toInt()
+                    Log.d("roll", roll.toString())
+                    if (Math.abs(lastRoll - roll) > 10 && roll > 500 && roll < 2500) {
+                        pwmOutput_!!.setPulseWidth(roll)
+                        listener!!.onRollChanged(roll)
+                        lastRoll = roll
+                    }
+                } else {
+                    pwmOutput_!!.setPulseWidth(seek)
+                    listener!!.onRollChanged(seek)
                 }
                 led_!!.write(!mLed)
                 Thread.sleep(10)
@@ -152,7 +158,7 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             tilt = event.values[0]
-            Log.d("tilt", tilt.toString())
+            //Log.d("tilt", tilt.toString()) //-10 to 10
         }
     }
 
@@ -170,7 +176,7 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
     }
 
     override fun onBind(arg0: Intent): IBinder? {
-        return myBinder
+        return mBinder
     }
 
     companion object {
