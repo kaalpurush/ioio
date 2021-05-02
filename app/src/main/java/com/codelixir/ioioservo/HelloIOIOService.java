@@ -12,11 +12,10 @@ import android.hardware.SensorManager;
 import android.media.RingtoneManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
-import ioio.lib.api.AnalogInput;
+import androidx.core.app.NotificationCompat;
+
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.PwmOutput;
@@ -24,6 +23,7 @@ import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOService;
+
 
 /**
  * An example IOIO service. While this service is alive, it will attempt to

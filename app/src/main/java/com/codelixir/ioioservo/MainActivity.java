@@ -29,7 +29,7 @@ public class MainActivity extends Activity implements IHelloIOIOService {
 
     Button btnStart;
 
-    private ServiceConnection myConnection = new ServiceConnection() {
+    private final ServiceConnection myConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -151,7 +151,7 @@ public class MainActivity extends Activity implements IHelloIOIOService {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(getApplicationContext(), "IOIO Disconnected!", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "IOIO Disconnected!", Toast.LENGTH_LONG).show();
             }
         });
 

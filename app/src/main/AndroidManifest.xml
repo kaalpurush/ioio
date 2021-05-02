@@ -10,12 +10,13 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.DeviceDefault.Light.DarkActionBar">
+        android:theme="@android:style/Theme.Material.Light">
         <uses-library
             android:name="com.android.future.usb.accessory"
             android:required="false" />
 
-        <service android:name=".HelloIOIOService">
+        <service android:name=".HelloIOIOService"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
             </intent-filter>
@@ -25,7 +26,7 @@
                 android:resource="@xml/accessory_filter" />
         </service>
 
-        <receiver android:name=".NotificationActionBroadcastReceiver"></receiver>
+        <receiver android:name=".NotificationActionBroadcastReceiver" />
 
         <activity
             android:name=".MainActivity"

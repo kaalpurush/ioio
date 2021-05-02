@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 29
     buildToolsVersion '28.0.3'
 
     defaultConfig {
         applicationId "com.codelixir.ioioservo"
-        minSdkVersion 14
+        minSdkVersion 21
     }
 
     buildTypes {
@@ -18,9 +18,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:support-v4:27.1.1'
-    implementation 'com.github.ytai.ioio:IOIOLibAndroid:5.07'
-    implementation 'com.github.ytai.ioio:IOIOLibAndroidBluetooth:5.07'
+    implementation 'com.github.ytai.ioio:IOIOLibAndroid:6.1.0'
+    implementation 'com.github.ytai.ioio:IOIOLibAndroidBluetooth:6.1.0'
     implementation 'com.github.ytai.ioio:IOIOLibAndroidAccessory:5.07'
     implementation 'com.github.ytai.ioio:IOIOLibAndroidDevice:5.07'
 }
