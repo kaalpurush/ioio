@@ -2,27 +2,20 @@ package com.codelixir.ioioservo
 
 import android.app.ActivityManager
 import android.bluetooth.BluetoothAdapter
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
+import android.content.*
 import android.os.Bundle
 import android.os.IBinder
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.codelixir.ioioservo.HelloIOIOService.IHelloIOIOService
-import com.codelixir.ioioservo.HelloIOIOService.IOIOBinder
+import com.codelixir.ioioservo.databinding.ActivityMainBinding
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity(), IHelloIOIOService {
-    private lateinit var toggleButton: ToggleButton
-    lateinit var btnStart: Button
-    lateinit var progressBar: ProgressBar
-    lateinit var seekBar: SeekBar
-    lateinit var tvProgress: TextView
-
+class MainActivity : BaseActivity<ActivityMainBinding>(), IHelloIOIOService {
     private lateinit var mService: HelloIOIOService
     private var mBound: Boolean = false
 
@@ -40,34 +33,55 @@ class MainActivity : AppCompatActivity(), IHelloIOIOService {
         }
     }
 
+    private val mReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            if (BluetoothAdapter.ACTION_STATE_CHANGED == intent.action) {
+                when (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1)) {
+                    BluetoothAdapter.STATE_OFF -> {
+                        stopIOIOService()
+                        binding.btnBluetooth.visibility = View.VISIBLE
+                    }
+                    BluetoothAdapter.STATE_TURNING_ON -> {
+                    }
+                    BluetoothAdapter.STATE_ON -> {
+                        startIOIOService()
+                        binding.btnBluetooth.visibility = View.GONE
+                    }
+                    BluetoothAdapter.STATE_TURNING_OFF -> {
+                    }
+                }
+            }
+        }
+    }
+
+    override fun getViewBinding(inflater: LayoutInflater)= ActivityMainBinding.inflate(inflater)
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(mReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(mReceiver);
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (intent.action != null && intent.action == "stopActivity") {
             finish()
             return
         }
-        enableBluetooth()
-        setContentView(R.layout.activity_main)
-        toggleButton = findViewById(R.id.ToggleButton)
-        toggleButton.setOnCheckedChangeListener { buttonView, isChecked ->
+
+        binding.toggleButton.setOnCheckedChangeListener { buttonView, isChecked ->
             if (mBound) mService.toggleLed()
         }
-        btnStart = findViewById(R.id.btnStart)
-        btnStart.setOnClickListener {
-            val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-            if (mBluetoothAdapter.isEnabled) {
-                startIOIOService()
-            }
-        }
 
-        progressBar = findViewById(R.id.progressBar)
-        tvProgress = findViewById(R.id.tvProgress)
-        seekBar = findViewById(R.id.seekBar)
-
-        seekBar.setOnSeekBarChangeListener(object :
+        binding.seekBar.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                mService.seek = progress
+                if (mBound)
+                    mService.seek = progress
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -79,12 +93,21 @@ class MainActivity : AppCompatActivity(), IHelloIOIOService {
             }
         })
 
-        if (isServiceRunning) {
+        enableBluetoothAndStartService()
+    }
+
+    fun enableBluetoothAndStartService() {
+        val mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (mBluetoothAdapter.isEnabled) {
             startIOIOService()
+            binding.btnBluetooth.visibility = View.GONE
+        } else {
+            enableBluetooth()
         }
     }
 
     fun setSeek(view: View) {
+        if (!mBound) return
         val seekStart = (view as TextView).text.toString().toInt()
         val seekEnd = (view as TextView).tag.toString().toInt()
         lifecycleScope.launch {
@@ -117,9 +140,6 @@ class MainActivity : AppCompatActivity(), IHelloIOIOService {
         val intent = Intent(this, HelloIOIOService::class.java)
         bindService(intent, mConnection, BIND_AUTO_CREATE)
         startService(intent)
-
-        btnStart.visibility = View.GONE
-        toggleButton.visibility = View.VISIBLE
     }
 
     private fun stopIOIOService() {
@@ -128,7 +148,7 @@ class MainActivity : AppCompatActivity(), IHelloIOIOService {
         stopService(intent)
     }
 
-    private fun enableBluetooth() {
+    fun enableBluetooth(view: View? = null) {
         BluetoothAdapter.getDefaultAdapter().run { if (!isEnabled) enable() }
     }
 
@@ -145,19 +165,25 @@ class MainActivity : AppCompatActivity(), IHelloIOIOService {
     override fun onConnect() {
         runOnUiThread {
             Toast.makeText(applicationContext, "IOIO Connected!", Toast.LENGTH_LONG).show()
+
+            binding.layoutConnected.visibility = View.VISIBLE
+            binding.layoutDisconnected.visibility = View.GONE
         }
     }
 
     override fun onRollChanged(roll: Int) {
         runOnUiThread {
-            progressBar.progress = roll
-            tvProgress.text = roll.toString()
+            binding.progressBar.progress = roll
+            binding.tvProgress.text = roll.toString()
         }
     }
 
     override fun onDisconnect() {
         runOnUiThread {
             Toast.makeText(applicationContext, "IOIO Disconnected!", Toast.LENGTH_LONG).show()
+
+            binding.layoutConnected.visibility = View.GONE
+            binding.layoutDisconnected.visibility = View.VISIBLE
         }
     }
 }

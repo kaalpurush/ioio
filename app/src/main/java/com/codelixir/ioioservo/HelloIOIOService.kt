@@ -62,12 +62,12 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
             private var led_: DigitalOutput? = null
             override fun disconnected() {
                 super.disconnected()
-                listener!!.onDisconnect()
+                listener?.onDisconnect()
             }
 
             @Throws(ConnectionLostException::class, InterruptedException::class)
             override fun setup() {
-                listener!!.onConnect()
+                listener?.onConnect()
                 led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true)
                 //input_ = ioio_.openAnalogInput(40);
                 pwmOutput_ = ioio_.openPwmOutput(12, 50)
@@ -139,7 +139,9 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
                 RingtoneManager
                     .getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             )
-            .setContentIntent(contentIntent).setOngoing(true)
+            .setContentIntent(contentIntent)
+            .setOngoing(true)
+
         val buttonIntent = Intent(this, NotificationActionBroadcastReceiver::class.java)
         buttonIntent.action = "stopService"
         val buttonPendingIntent = PendingIntent.getBroadcast(
@@ -147,6 +149,7 @@ class HelloIOIOService : IOIOService(), SensorEventListener {
             buttonIntent, 0
         )
         mBuilder.addAction(R.drawable.stop, "Stop", buttonPendingIntent)
+
         mNotificationManager!!.notify(NOTIFICATION_ID, mBuilder.build())
     }
 
